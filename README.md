@@ -1,0 +1,1 @@
+# inline-module-web-worker-relative-path-test
