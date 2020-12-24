@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inline module web worker relative import bug</title>
+</head>
+<body>
+  <h2 style="text-align: center;">
+    It it works correctly, an alert with "It works!" should appear.
+  </h2>
+
+  <script id="worker1" type="text/js-worker">
+    import { add } from './math.js'
+
+    self.addEventListener('message', (event) => {
+      const { a, b } = event.data
+
+      const result = add(a, b)
+
+      self.postMessage(result)
+    })
+  </script>
+
+  <script type="module">
+    // The worker code
+    const workerScript = document
+      .querySelector('#worker1')
+      .textContent
+
+    // Create a blob for the inline worker code
+    const blob = new Blob([workerScript], { type: 'text/javascript' })
+
+    // Create worker
+    const worker = new Worker(window.URL.createObjectURL(blob), { type: 'module' })
+
+    // log the data received
+    worker.addEventListener('message', (event) => {
+      console.log('Message received', event)
+
+      if (event.data === 8) {
+        alert('It works!')
+      }
+    })
+
+    worker.addEventListener('error', (event) => {
+      console.error('Error in worker', event)
+    })
+
+    // send a message
+    worker.postMessage({ a: 3, b: 5 })
+  </script>
+</body>
+</html>
